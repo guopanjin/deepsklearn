@@ -1,0 +1,25 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# env
+.venv/
+venv/
+
+# logs
+logs/
+*.log
+
+# model checkpoints
+checkpoints/
+*.ckpt
+*.pt
+
+# data (如果本地)
+data/
+
+# IDE
+.idea/
+
+# notebook cache
+.ipynb_checkpoints/
