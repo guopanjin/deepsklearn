@@ -35,28 +35,4 @@ class CategoricalProcessor(FeatureProcessor):
         ])
         return x
 if __name__ == '__main__':
-    print(np.arcsinh(0))
-    print(np.clip(0.1,10,80))
-    df=pd.DataFrame({
-        "f1":[1,2,3,4,5,None,9]
-    })
-    print(df)
-    print(df.values)
-    print(type((df.values)))
-    print(np.floor(12.34))
-    np_values=df.values
-    mask=np.isnan(np_values)
-    df1 = pd.DataFrame({
-        "f1": ["2323jjjj", 2, 3, 4, 5, None, 9]
-    })
-    continuousProcessor=ContinuousProcessor()
-    #print(continuousProcessor.transformer(df1["f1"]))
-    df2 = pd.DataFrame({
-        "f1": ["2323jjjj", "erwerw", 3, 4, 5, None, 9]
-    })
-    print(df2["f1"].values,df2["f1"].values.shape)
-    print(df["f1"].values,df["f1"].values.shape)
-    categoricalProcessor=CategoricalProcessor()
-    x=categoricalProcessor.transformer(df2)
-    print(x)
     pass
