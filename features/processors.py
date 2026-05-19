@@ -1,4 +1,4 @@
-from base import FeatureProcessor
+from features.base import FeatureProcessor
 import numpy as np
 from pandas import DataFrame
 import pandas as pd
@@ -9,8 +9,10 @@ class ContinuousProcessor(FeatureProcessor):
         self.scale=scale
         self.granularity=granularity
         self.B=B
-
-    def transformer(self,series:pd.Series):
+    '''
+    return 1D-array shape=(N,)
+    '''
+    def transform(self,series:pd.Series):
         if pd.api.types.is_numeric_dtype(series):
             np_values=series.values.astype(float)
             mask=np.isnan(np_values)
@@ -27,7 +29,10 @@ class ContinuousProcessor(FeatureProcessor):
 class CategoricalProcessor(FeatureProcessor):
     def __init__(self,bucket_size=1000):
         self.bucket_size=bucket_size
-    def transformer(self,series:pd.Series):
+    '''
+    return 1D-array shape=(N,)
+    '''
+    def transform(self,series:pd.Series):
         #fill the missing data
         x=series.fillna("MISSING").astype(str).values
         x=np.array([

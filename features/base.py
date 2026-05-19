@@ -5,10 +5,10 @@ class FeatureProcessor(ABC):
     def fit(self,series):
         return self
     @abstractmethod
-    def transformer(self,series):
+    def transform(self,series):
         pass
 
-    def fit_transformer(self,series):
+    def fit_transform(self,series):
         self.fit(series)
-        self.transformer(series)
+        self.transform(series)
 
