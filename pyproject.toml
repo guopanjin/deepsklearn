@@ -1,10 +1,11 @@
 [project]
 name = "deepsklearn"
 version = "0.1.0"
-description = "Sklearn-style "
+description = "A sklearn-style deep learning framework with unified API"
 authors = [
-    {name = "guopan.jin"}
+    {name = "guopan.jin",email='guopan.jin@outlook.com'}
 ]
+
 dependencies = [
     "torch",
     "numpy"
