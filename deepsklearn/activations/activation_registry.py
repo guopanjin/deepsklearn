@@ -15,7 +15,7 @@ _ACTIVATION_REGISTRY={
 
 def get_activation(name:str,**kwargs)->nn.Module:
     if name not in _ACTIVATION_REGISTRY:
-        raise ValueError(f"there is no such activation functions:{name},avalable:{list(_ACTIVATION_REGISTRY.keys())}")
+        raise ValueError(f"there is no such activation functions:{name},avalable:{sorted(_ACTIVATION_REGISTRY.keys())}")
     cls,default_parameter = _ACTIVATION_REGISTRY[name]
     merge_parameter={**default_parameter,**kwargs}
     return cls(**merge_parameter)
