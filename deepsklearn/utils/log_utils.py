@@ -19,16 +19,17 @@ class ColorFormatter(logging.Formatter):
 
 class Logger:
     _logger = None
-    _projectName="DeepSklearn"
     _logger_level=logging.INFO
     @staticmethod
-    def getRootPath(projectName):
-        curPath = os.path.abspath(os.path.dirname(__file__))
-        rootPath = curPath[:curPath.find(f'{projectName}') + len(f'{projectName}')]
-        return rootPath
+    def getRootPath():
+        '''
+         always find the path from log_utils.py
+         __file__ :log_utils.py
+        '''
+        return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     @staticmethod
-    def get_logger(log_file="app.log",projectName=_projectName, backup_count=30, log_level=_logger_level):
-        log_dir=Logger.getRootPath(projectName)
+    def get_logger(log_file="app.log", backup_count=30, log_level=_logger_level):
+        log_dir=Logger.getRootPath()
         log_dir = os.path.join(log_dir, "logs")
         if Logger._logger is None:
             Logger._logger = Logger._create_logger(log_file, log_dir, backup_count, log_level)

@@ -28,7 +28,7 @@ train_dataloader:
    }
 )
 '''
-class Trainer:
+class DiscriminativeTrainer:
     def __init__(self,
                  *,
                  model_name:str,
@@ -45,7 +45,9 @@ class Trainer:
                  validation_steps=500,
                  log_steps=10,
                  ema_loss_alpha=0.1,
-                 customize_initialization=False
+                 customize_initialization=False,
+                 use_early_stop=False,
+                 step_early_stop=False
                  ):
         self.model_name=model_name
         self.model=model
@@ -62,12 +64,17 @@ class Trainer:
         self.log_steps=log_steps
         self.ema_loss_alpha=ema_loss_alpha
         self.customize_initialization=customize_initialization
+        self.use_early_stop=use_early_stop
+        self.step_early_stop=step_early_stop
     def train(self):
         logger.info(f"device:{self.device}")
         logger.info(f"{self.model_name} structure:\n {self.model}")
         scheduler=None
         if self.use_warm_up:
             scheduler=get_linear_scheduler(optimizer=self.optimizer, warmup_steps=self.warm_up_steps)
+        early_stop=None
+        if self.use_early_stop:
+            early_stop=EarlyStop()
         model=self.model.to(self.device)
         model.train()
         #the merics we need to monitor
@@ -79,6 +86,10 @@ class Trainer:
         ema_loss=None
         start_time=time.time()
         for epoch in range(self.epoch_number):
+            if self.use_early_stop:
+                if early_stop.stopped():
+                    logger.info(f"early stop trigged,epoch {epoch}")
+                    break;
             for feature_dict,label_dict in self.train_dataloader:
                 feature_dict={k:v.to(self.device) for k,v in feature_dict.items()}
                 label_dict={k:v.to(self.device) for k,v in label_dict.items()}
@@ -115,14 +126,31 @@ class Trainer:
                         "global_step":global_step
                     })
                 if global_step % self.validation_steps ==0:
-                    self._evaluation(epoch=epoch,model_name=self.model_name)
+                    auc_metric,validation_loss=self._evaluation(epoch=epoch,model_name=self.model_name)
+                    if self.use_early_stop and self.step_early_stop:
+                        if early_stop.step(validation_loss=validation_loss,
+                                        validation_auc=auc_metric,
+                                         model=self.model
+                                        ):
+                            break;
                 if scheduler:
                     scheduler.step()
-            self._evaluation(epoch=epoch,model_name=self.model_name)
+            auc_metric,validation_loss=self._evaluation(epoch=epoch,model_name=self.model_name)
+            if self.use_early_stop and not self.step_early_stop:
+                if early_stop.step(validation_loss=validation_loss,
+                                validation_auc=auc_metric,
+                                model=self.model
+                                ):
+                    break;
+
+        if  self.use_early_stop and early_stop.best_auc !=0 and early_stop.best_state!=None:
+            #restore the best model to self.model
+            self.model.load_state_dict(early_stop.best_state) # in place operation
+            logger.info("restore the best model weight to the current model")
 
     def save(self):
         if self.model_dir is None:
-            self.model_dir=os.path.expanduser("~/.deepskearn/models/")
+            self.model_dir=os.path.expanduser("~/.deepsklearn/models/")
         os.makedirs(self.model_dir,exist_ok=True)
         model_path=os.path.join(self.model_dir,self.model_name)
         torch.save(self.model.state_dict(),model_path)
@@ -157,6 +185,36 @@ class Trainer:
             "validation_loss":validation_loss
         })
         self.model.train()
+        return auc_metric,validation_loss
+class EarlyStop:
+    def __init__(self,
+                 patience:int =5,
+                 min_delta=0.0005
+                 ):
+        self.patience=patience
+        self.min_delta=min_delta
+        self.best_state=None
+        self.best_auc=0
+        self.bad_round=0
+        self.best_loss=0
+        self.is_stop=False
+    def step(self,validation_auc,validation_loss,model:nn.Module):
+        if  validation_auc > self.best_auc + self.min_delta:
+            self.best_auc=validation_auc
+            self.best_loss=validation_loss
+            self.bad_round=0
+            #becase model.state_dict() is reference not copy,so still changing,so need to copy that
+            self.best_state={k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+        else:
+            self.bad_round+=1
+        if self.bad_round>=self.patience:
+            logger.info(f"early stop,stop training, best_auc:{self.best_auc},best_loss:{self.best_loss}, bad_round:{self.bad_round}, min_delta:{self.min_delta}")
+            self.is_stop=True
+            return True
+        return False
+    def stopped(self):
+        return self.is_stop
+
 class Predictor:
     @classmethod
     def load_model(cls,model_path,model:nn.Module,device=None):

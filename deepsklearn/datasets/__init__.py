@@ -1,3 +1,2 @@
 from deepsklearn.datasets.streaming_dataset import TorchStreamingDataset
-
-__all__=["TorchStreamingDataset"]
+from deepsklearn.datasets.seq_dataset import TorchStreamingSeqDataset

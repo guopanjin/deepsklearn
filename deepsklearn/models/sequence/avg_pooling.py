@@ -4,16 +4,13 @@ import torch.nn.functional as F
 from deepsklearn.layers import EncoderLayer
 from deepsklearn.initializations import init_embedding
 from deepsklearn.layers import MLPBlock
-'''
 
-'''
 
-class DIN(nn.Module):
+class AvgPooling(nn.Module):
     def __init__(self,
                  num_items,
                  embed_dim: int = 32,
                  max_len: int = 50,
-                 attention_layers=(128,36),
                  hidden_layers=(128, 64, 32),
                  drop_out=0.0):
         super().__init__()
@@ -22,15 +19,10 @@ class DIN(nn.Module):
         self.max_len = max_len
         self.hidden_layers = hidden_layers
         self.drop_out = drop_out
-        self.attention_layers=attention_layers
         # padding_idx=0 means this line embedding will not update the gradient
         self.item_embedding_table = nn.Embedding(num_embeddings=self.num_items + 1, embedding_dim=self.embed_dim,
                                                  padding_idx=0)
-        self.attention_mlp=MLPBlock(
-                                  input_dim=4*self.embed_dim,
-                                  hidden_layers= self.attention_layers
-                                  )
-        self.attention_linear_layer=nn.Linear(self.attention_layers[-1],1)
+
         self.mlp_block = MLPBlock(input_dim=self.embed_dim*3,
                                   hidden_layers=self.hidden_layers,
                                   dropout=self.drop_out
@@ -50,23 +42,17 @@ class DIN(nn.Module):
 
     def forward(self, x):
         hist_item_ids = x["hist_sequence"]
-        batch_size=hist_item_ids.shape[0]
-        hist_mask = x["hist_mask"] #(batch_size,max_len)
+        hist_mask = x["hist_mask"] #(batch_size,feature_size)
         candidate_item_id = x["candidate_id"]
+        seq_len=torch.sum(hist_mask,dim=1,keepdim=True)#(batch_size,1)
         key_padding_mask = (hist_mask == 0) #(batch_size,feature_size)
 
-        hist_embedding=self.item_embedding_table(hist_item_ids)#(batch_size,seq_len,embed_dim)
+        hist_embedding=self.item_embedding_table(hist_item_ids)#(batch_size,feature_size,embed_dim)
         hist_embedding=torch.masked_fill(hist_embedding,torch.unsqueeze(key_padding_mask,dim=-1),float(0.0))
         candidate_embedding=self.item_embedding_table(candidate_item_id)#(batch_size,embed_dim)
-        candidate_embedding_2=torch.unsqueeze(candidate_embedding,dim=1).expand(batch_size,self.max_len,self.embed_dim)
-        #(batch_size,4,seq_len,embed_dim)
-        attention_mlp_input=torch.concat([hist_embedding,candidate_embedding_2,hist_embedding- candidate_embedding_2,hist_embedding*candidate_embedding_2],dim=-1)
-        attention_scores=torch.squeeze(self.attention_linear_layer(self.attention_mlp(attention_mlp_input)),dim=-1)#(batch_size,max_len)
-        #mask
-        attention_scores=torch.masked_fill(attention_scores,key_padding_mask,float(0.0))
-        user_vector=torch.transpose(hist_embedding,1,2)@torch.unsqueeze(attention_scores,dim=2) #(batch_size,embed,1)
 
-        user_vector=torch.squeeze(user_vector,dim=-1)
+        user_vector=torch.sum(hist_embedding,dim=1)/(seq_len+1e-9)#(batch_size,embed_dim)
+
         mlp_input=torch.concat([user_vector,candidate_embedding,user_vector*candidate_embedding],dim=1)
         mlp_out=self.mlp_block(mlp_input)
         logits=self.output_linear_layer(mlp_out)

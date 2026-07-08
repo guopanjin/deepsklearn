@@ -14,6 +14,12 @@ from deepsklearn.models.non_sequence.nfm import  NFM
 from deepsklearn.models.non_sequence.afm import  AFM
 from deepsklearn.models.non_sequence.autoint import  AutoInt
 
+from deepsklearn.models.sequence.bst import  BST
+from deepsklearn.models.sequence.avg_pooling import  AvgPooling
+from deepsklearn.models.sequence.din import  DIN
+
+
+
 
 
 

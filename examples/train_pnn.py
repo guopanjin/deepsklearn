@@ -6,10 +6,10 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader,Dataset
 from deepsklearn.models import PNN
-from deepsklearn.trainer import Trainer
+from deepsklearn.trainer import DiscriminativeTrainer
 '''
-2026-07-04 15:24:18 | INFO | train.py:105 | {'model': 'pnn', 'duration': '26.039min', 'stage': 'training', 'epoch': 0, 'step_size': 20000, 'step_loss': 0.4476205110549927, 'step_auc': 0.806814190025321, 'ema_loss': 0.44494486984297277, 'global_size': 36600000, 'global_step': 1830}
-2026-07-04 15:25:57 | INFO | train.py:151 | {'stage': 'validation', 'model_name': 'pnn', 'epoch': 0, 'validation_number': 4584062, 'validation_auc': 0.8102533904656681, 'validation_loss': 0.4399}
+2026-07-04 15:24:18 | INFO | discriminative_trainer.py:105 | {'model': 'pnn', 'duration': '26.039min', 'stage': 'training', 'epoch': 0, 'step_size': 20000, 'step_loss': 0.4476205110549927, 'step_auc': 0.806814190025321, 'ema_loss': 0.44494486984297277, 'global_size': 36600000, 'global_step': 1830}
+2026-07-04 15:25:57 | INFO | discriminative_trainer.py:151 | {'stage': 'validation', 'model_name': 'pnn', 'epoch': 0, 'validation_number': 4584062, 'validation_auc': 0.8102533904656681, 'validation_loss': 0.4399}
 
 '''
 
@@ -52,7 +52,7 @@ def main(model_name,model:nn.Module,device):
         validation_dataset,
         batch_size=None
     )
-    trainer=Trainer(
+    trainer=DiscriminativeTrainer(
             model_name=model_name,
             model=model,
             train_dataloader=train_dataLoader,

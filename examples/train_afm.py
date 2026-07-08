@@ -6,10 +6,10 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader,Dataset
 from deepsklearn.models import AFM
-from deepsklearn.trainer import Trainer
+from deepsklearn.trainer import DiscriminativeTrainer
 '''
-2026-07-05 15:46:20 | INFO | train.py:105 | {'model': 'afm', 'duration': '124.115min', 'stage': 'training', 'epoch': 0, 'step_size': 20000, 'step_loss': 0.46006739139556885, 'step_auc': 0.7922841983231486, 'ema_loss': 0.4589460503445241, 'global_size': 36600000, 'global_step': 1830}
-2026-07-05 15:50:31 | INFO | train.py:151 | {'stage': 'validation', 'model_name': 'afm', 'epoch': 0, 'validation_number': 4584062, 'validation_auc': 0.7947732335381615, 'validation_loss': 0.4537}
+2026-07-05 15:46:20 | INFO | discriminative_trainer.py:105 | {'model': 'afm', 'duration': '124.115min', 'stage': 'training', 'epoch': 0, 'step_size': 20000, 'step_loss': 0.46006739139556885, 'step_auc': 0.7922841983231486, 'ema_loss': 0.4589460503445241, 'global_size': 36600000, 'global_step': 1830}
+2026-07-05 15:50:31 | INFO | discriminative_trainer.py:151 | {'stage': 'validation', 'model_name': 'afm', 'epoch': 0, 'validation_number': 4584062, 'validation_auc': 0.7947732335381615, 'validation_loss': 0.4537}
 
 '''
 logger=Logger.get_logger()
@@ -51,7 +51,7 @@ def main(model_name,model:nn.Module,device):
         validation_dataset,
         batch_size=None
     )
-    trainer=Trainer(
+    trainer=DiscriminativeTrainer(
             model_name=model_name,
             model=model,
             train_dataloader=train_dataLoader,

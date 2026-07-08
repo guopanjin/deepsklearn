@@ -6,10 +6,10 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader,Dataset
 from deepsklearn.models import WideDeep
-from deepsklearn.trainer import Trainer
+from deepsklearn.trainer import DiscriminativeTrainer
 '''
-2026-07-03 20:55:20 | INFO | train.py:105 | {'model': 'widedeep', 'duration': '22.432min', 'stage': 'training', 'epoch': 0, 'step_size': 20000, 'step_loss': 0.4512960910797119, 'step_auc': 0.8032659670132741, 'ema_loss': 0.44954721752285864, 'global_size': 36600000, 'global_step': 1830}
-2026-07-03 20:56:22 | INFO | train.py:151 | {'stage': 'validation', 'model_name': 'widedeep', 'epoch': 0, 'validation_number': 4584062, 'validation_auc': 0.8054611413192503, 'validation_loss': 0.4445}
+2026-07-03 20:55:20 | INFO | discriminative_trainer.py:105 | {'model': 'widedeep', 'duration': '22.432min', 'stage': 'training', 'epoch': 0, 'step_size': 20000, 'step_loss': 0.4512960910797119, 'step_auc': 0.8032659670132741, 'ema_loss': 0.44954721752285864, 'global_size': 36600000, 'global_step': 1830}
+2026-07-03 20:56:22 | INFO | discriminative_trainer.py:151 | {'stage': 'validation', 'model_name': 'widedeep', 'epoch': 0, 'validation_number': 4584062, 'validation_auc': 0.8054611413192503, 'validation_loss': 0.4445}
 
 
 '''
@@ -53,7 +53,7 @@ def main(model_name,model:nn.Module,device):
         validation_dataset,
         batch_size=None
     )
-    trainer=Trainer(
+    trainer=DiscriminativeTrainer(
             model_name=model_name,
             model=model,
             train_dataloader=train_dataLoader,

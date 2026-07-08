@@ -6,6 +6,9 @@ def init_embedding(module:nn.Module,
                ):
     if isinstance(module,nn.Embedding):
         nn.init.normal_(module.weight,std=std)
+        with torch.no_grad():
+            if module.padding_idx is not None:
+                module.weight[module.padding_idx].fill_(0.0)
 def init_module(module:nn.Module,
                 init_name='xavier',
                 std=0.02

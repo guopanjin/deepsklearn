@@ -6,10 +6,10 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader,Dataset
 from deepsklearn.models import DCNV2
-from deepsklearn.trainer import Trainer
+from deepsklearn.trainer import DiscriminativeTrainer
 '''
-2026-07-04 17:55:15 | INFO | train.py:105 | {'model': 'dcnv2', 'duration': '33.219min', 'stage': 'training', 'epoch': 0, 'step_size': 20000, 'step_loss': 0.4464934468269348, 'step_auc': 0.8079431712527803, 'ema_loss': 0.4453680957339285, 'global_size': 36600000, 'global_step': 1830}
-2026-07-04 17:57:08 | INFO | train.py:151 | {'stage': 'validation', 'model_name': 'dcnv2', 'epoch': 0, 'validation_number': 4584062, 'validation_auc': 0.8094903441715673, 'validation_loss': 0.4406}
+2026-07-04 17:55:15 | INFO | discriminative_trainer.py:105 | {'model': 'dcnv2', 'duration': '33.219min', 'stage': 'training', 'epoch': 0, 'step_size': 20000, 'step_loss': 0.4464934468269348, 'step_auc': 0.8079431712527803, 'ema_loss': 0.4453680957339285, 'global_size': 36600000, 'global_step': 1830}
+2026-07-04 17:57:08 | INFO | discriminative_trainer.py:151 | {'stage': 'validation', 'model_name': 'dcnv2', 'epoch': 0, 'validation_number': 4584062, 'validation_auc': 0.8094903441715673, 'validation_loss': 0.4406}
 
 '''
 
@@ -54,7 +54,7 @@ def main(model_name,model:nn.Module,device):
         validation_dataset,
         batch_size=None
     )
-    trainer=Trainer(
+    trainer=DiscriminativeTrainer(
             model_name=model_name,
             model=model,
             train_dataloader=train_dataLoader,
