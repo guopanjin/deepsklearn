@@ -2,6 +2,7 @@ from deepsklearn.utils.log_utils import Logger
 from deepsklearn.utils import get_device
 from deepsklearn.optimizers import build_adamw_with_decay_groups
 from deepsklearn.optimizers import get_linear_scheduler
+from deepsklearn.metrics import auc
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -22,7 +23,7 @@ train_dataloader:
                          }
    yield feature_dict
 '''
-class RetrivealTrainer:
+class MultiTaskTrainer:
     def __init__(self,
                  *,
                  model_name:str,
@@ -81,20 +82,23 @@ class RetrivealTrainer:
         ema_loss=None
         start_time=time.time()
         for epoch in range(self.epoch_number):
-            for feature_dict in self.train_dataloader:
+            for feature_dict,label_dict in self.train_dataloader:
                 feature_dict={k:v.to(self.device) for k,v in feature_dict.items()}
+                label_dict = {k: v.to(self.device) for k, v in label_dict.items()}
+
                 step_size = len(next(iter(feature_dict.values())))
-                logits,labels=model(feature_dict) #
-                #print(f"logits:{logits}")
-                #print(f"labels:{labels}")
-                logits=torch.squeeze(logits,dim=-1)
-                labels=torch.squeeze(labels,dim=-1)
-                loss=self.loss_fn(input=logits,target=labels)
-                #print(f"===={loss}")
+                model_dict=model(feature_dict,label_dict)
+                loss=model_dict["loss"]
                 self.optimizer.zero_grad() #clear gradient
                 loss.backward() # get the gradient
                 self.optimizer.step()
                 ####evaluation part
+                pctr=model_dict["pctr"].detach().cpu().numpy()
+                ctr_label=model_dict["ctr_label"].detach().cpu().numpy()
+                pctcvr=model_dict["pctcvr"].detach().cpu().numpy()
+                ctcvr_label=model_dict["ctcvr_label"].detach().cpu().numpy()
+                step_ctr_auc=auc(y_true=ctr_label,y_pred=pctr)
+                step_ctcvr_auc = auc(y_true=ctcvr_label, y_pred=pctcvr)
                 global_size+=step_size
                 global_step+=1
                 step_loss=loss.detach().cpu().item()
@@ -114,9 +118,10 @@ class RetrivealTrainer:
                         "ema_loss":ema_loss,
                         "global_size":global_size,
                         "global_step":global_step,
-                        "num_classes":self.num_classes,
-                        "step_loss_ppl": np.round(np.exp(step_loss),4),
-                        "ema_loss_ppl":np.round(np.exp(ema_loss),4)
+                        "ctr_loss": np.round(model_dict["ctr_loss"].detach().cpu().item(),4),
+                        "ctcvr_loss":np.round(model_dict["ctcvr_loss"].detach().cpu().item(),4),
+                        "step_ctr_auc":step_ctr_auc,
+                        "step_ctcvr_auc":step_ctcvr_auc
                     })
                 if global_step % self.validation_steps ==0:
                     validation_loss=self._evaluation(epoch=epoch,model_name=self.model_name)
@@ -154,16 +159,32 @@ class RetrivealTrainer:
         self.model.eval()
         loss_sum=0
         size_sum=0
-        for feature_dict in self.validation_dataloader:
+        pctr_list=[]
+        ctr_label_list=[]
+        pctcvr_list=[]
+        ctcvr_label_list=[]
+
+        for feature_dict,label_dict in self.validation_dataloader:
             feature_dict = {k: v.to(self.device) for k, v in feature_dict.items()}
+            label_dict = {k: v.to(self.device) for k, v in label_dict.items()}
             step_size= len(next(iter(feature_dict.values())))
-            logits,labels= self.model(feature_dict)
-            logits=torch.squeeze(logits,dim=-1)
-            labels = torch.squeeze(labels, dim=-1)
-            # ignore_index,will ignore the value of label is 0
-            loss = self.loss_fn(input=logits, target=labels)
+            model_dict = self.model(feature_dict, label_dict)
+            loss = model_dict["loss"]
             loss_sum+=loss.cpu().item()*step_size
             size_sum+=step_size
+            ##auc
+            pctr = model_dict["pctr"].detach().cpu().tolist()
+            pctr_list.extend(pctr)
+            ctr_label = model_dict["ctr_label"].detach().cpu().tolist()
+            ctr_label_list.extend(ctr_label)
+            pctcvr = model_dict["pctcvr"].detach().cpu().tolist()
+            pctcvr_list.extend(pctcvr)
+            ctcvr_label = model_dict["ctcvr_label"].detach().cpu().tolist()
+            ctcvr_label_list.extend(ctcvr_label)
+
+        ctr_auc = auc(y_true=ctr_label_list, y_pred=pctr_list)
+        ctcvr_auc = auc(y_true=ctcvr_label_list, y_pred=pctcvr_list)
+
         validation_loss=np.round(loss_sum/size_sum,4)
         normal_loss=0.0
         if self.num_classes is not None and self.num_classes>0:
@@ -175,8 +196,8 @@ class RetrivealTrainer:
             "validation_number":size_sum,
             "validation_loss":validation_loss,
             "normal_loss":normal_loss,
-            "validation_ppl":np.round(np.exp(validation_loss),4),
-            "num_classes":self.num_classes
+            "ctr_auc":ctr_auc,
+            "ctcvr_auc":ctcvr_auc
         })
         self.model.train()
         return validation_loss
@@ -206,11 +227,4 @@ class EarlyStop:
         return False
     def stopped(self):
         return self.is_stop
-
-
-
-
-
-
-
 

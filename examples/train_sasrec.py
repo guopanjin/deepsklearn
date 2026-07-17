@@ -6,15 +6,11 @@ from deepsklearn.trainer import GenerativeTrainer
 from deepsklearn.utils import Logger,set_seed,prevent_sleep
 import torch.nn as nn
 '''
-2026-07-11 12:15:15 | INFO | generative_trainer.py:106 | {'model': 'sasrec', 'duration': '25.045min', 'stage': 'training', 'epoch': 25, 'step_size': 1000, 'step_loss': 6.676389694213867, 'ema_loss': 6.692757871895476, 'global_size': 574075, 'global_step': 590}
-2026-07-11 12:15:38 | INFO | generative_trainer.py:163 | {'stage': 'validation', 'model_name': 'sasrec', 'epoch': 25, 'validation_number': 22363, 'validation_loss': 7.3946}
-2026-07-11 12:15:38 | INFO | generative_trainer.py:192 | early stop,stop training,best_loss:7.3159, bad_round:5, min_delta:0.0005
-2026-07-11 12:15:38 | INFO | generative_trainer.py:136 | restore the best model weight to the current model
-
+2026-07-12 11:17:52 | INFO | generative_trainer.py:171 | {'stage': 'validation', 'model_name': 'sasrec', 'epoch': 25, 'validation_number': 22363, 'validation_loss': 7.3946, 'normal_loss': 0.7866, 'validation_ppl': 1627.1739, 'num_classes': 12102}
+2026-07-12 11:17:52 | INFO | generative_trainer.py:203 | early stop,stop training,best_loss:7.3159, bad_round:5, min_delta:0.0005
+2026-07-12 11:17:52 | INFO | generative_trainer.py:141 | restore the best model weight to the current model
 
 '''
-
-
 
 logger=Logger.get_logger()
 set_seed(42)

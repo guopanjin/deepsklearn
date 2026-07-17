@@ -11,6 +11,9 @@ def f1_score(*,y_true,y_pred):
     return f1_score(y_true,y_pred)
 
 def auc(*,y_true,y_pred)->float:
+    #in case,the y_true are all 1 or 0
+    if np.unique(np.array(y_true)).shape[0]<2:
+        return None
     return roc_auc_score(y_true,y_pred)
 '''
 [

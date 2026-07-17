@@ -1,17 +1,18 @@
-from deepsklearn.config import amazon_beauty_config
-from deepsklearn.models import  TwoTower
-from deepsklearn.datasets import TorchStreamingRetrievalDataset
+from deepsklearn.models import SharedBottom
+from deepsklearn.config import aliexpress_NL_config
+from deepsklearn.datasets import TorchStreamingMTLDataset
 from torch.utils.data import DataLoader
-from deepsklearn.trainer import RetrivealTrainer
+from deepsklearn.trainer import MultiTaskTrainer
 from deepsklearn.utils import Logger,set_seed,prevent_sleep
 import torch.nn as nn
 '''
-2026-07-13 19:13:00 | INFO | retriveval_trainer.py:171 | {'stage': 'validation', 'model_name': 'two tower', 'epoch': 5, 'validation_number': 22363, 'validation_loss': 7.6002, 'normal_loss': 0.8084, 'validation_ppl': 1998.5956, 'num_classes': 12102}
-2026-07-13 19:13:00 | INFO | retriveval_trainer.py:107 | {'model': 'two tower', 'duration': '0.043min', 'stage': 'training', 'epoch': 6, 'step_size': 1000, 'step_loss': 6.264137268066406, 'ema_loss': 6.151403324776163, 'global_size': 136178, 'global_step': 140, 'num_classes': 12102, 'step_loss_ppl': 525.3881, 'ema_loss_ppl': 469.3756}
-2026-07-13 19:13:00 | INFO | retriveval_trainer.py:171 | {'stage': 'validation', 'model_name': 'two tower', 'epoch': 6, 'validation_number': 22363, 'validation_loss': 7.4335, 'normal_loss': 0.7907, 'validation_ppl': 1691.7182, 'num_classes': 12102}
-2026-07-13 19:13:00 | INFO | retriveval_trainer.py:203 | early stop,stop training,best_loss:6.702, bad_round:5, min_delta:0.0005
-2026-07-13 19:13:00 | INFO | retriveval_trainer.py:131 | early stop trigged,epoch 6
-2026-07-13 19:13:00 | INFO | retriveval_trainer.py:143 | restore the best model weight to the current model
+2026-07-15 20:27:44 | INFO | multitask_trainer.py:111 | {'model': 'mtl_shared_bottom', 'duration': '11.772min', 'stage': 'training', 'epoch': 2, 'step_size': 10000, 'step_loss': 0.08980295062065125, 'ema_loss': 0.09370763581752216, 'global_size': 35595788, 'global_step': 3560, 'ctr_loss': 0.0858, 'ctcvr_loss': 0.004, 'step_ctr_auc': 0.7935235303135408, 'step_ctcvr_auc': 0.815847923961981}
+2026-07-15 20:27:47 | INFO | multitask_trainer.py:111 | {'model': 'mtl_shared_bottom', 'duration': '11.823min', 'stage': 'training', 'epoch': 2, 'step_size': 10000, 'step_loss': 0.08510968089103699, 'ema_loss': 0.09291639114189, 'global_size': 35795788, 'global_step': 3580, 'ctr_loss': 0.0821, 'ctcvr_loss': 0.003, 'step_ctr_auc': 0.8001424432641236, 'step_ctcvr_auc': 0.9630852340936374}
+2026-07-15 20:27:50 | INFO | multitask_trainer.py:111 | {'model': 'mtl_shared_bottom', 'duration': '11.872min', 'stage': 'training', 'epoch': 2, 'step_size': 10000, 'step_loss': 0.08740410953760147, 'ema_loss': 0.09018106338196227, 'global_size': 35995788, 'global_step': 3600, 'ctr_loss': 0.0817, 'ctcvr_loss': 0.0057, 'step_ctr_auc': 0.8020747333423796, 'step_ctcvr_auc': 0.9032663630904724}
+2026-07-15 20:27:53 | INFO | multitask_trainer.py:111 | {'model': 'mtl_shared_bottom', 'duration': '11.923min', 'stage': 'training', 'epoch': 2, 'step_size': 10000, 'step_loss': 0.07821179181337357, 'ema_loss': 0.09197493447295278, 'global_size': 36195788, 'global_step': 3620, 'ctr_loss': 0.0753, 'ctcvr_loss': 0.0029, 'step_ctr_auc': 0.7857633238405208, 'step_ctcvr_auc': 0.9533766883441721}
+2026-07-15 20:27:56 | INFO | multitask_trainer.py:111 | {'model': 'mtl_shared_bottom', 'duration': '11.974min', 'stage': 'training', 'epoch': 2, 'step_size': 10000, 'step_loss': 0.09307943284511566, 'ema_loss': 0.09084827027742773, 'global_size': 36395788, 'global_step': 3640, 'ctr_loss': 0.0873, 'ctcvr_loss': 0.0057, 'step_ctr_auc': 0.7799531782865446, 'step_ctcvr_auc': 0.8223829063250601}
+2026-07-15 20:28:58 | INFO | multitask_trainer.py:192 | {'stage': 'validation', 'model_name': 'mtl_shared_bottom', 'epoch': 2, 'validation_number': 5559301, 'validation_loss': 0.115, 'normal_loss': 0.0, 'ctr_auc': 0.7152432016342786, 'ctcvr_auc': 0.8329570542617007}
+2026-07-15 20:28:58 | INFO | multitask_trainer.py:148 | restore the best model weight to the current model
 
 '''
 logger=Logger.get_logger()
@@ -19,46 +20,46 @@ set_seed(42)
 prevent_sleep() #prevent_sleep
 
 ############setu up config##########
-generative_train_data_path=amazon_beauty_config.generative_train_data
-generative_validation_data_path=amazon_beauty_config.generative_validation_data
-generative_feature_columns=amazon_beauty_config.generative_feature_columns
-generative_label_column=amazon_beauty_config.generative_label_column
-generative_sequence_columns=amazon_beauty_config.generative_sequence_columns
-train_batch_size=1000
-validation_batch_size=1000
+train_data_path=aliexpress_NL_config.train_data_path
+validation_data_path=aliexpress_NL_config.test_data_path
+label_columns=aliexpress_NL_config.label_columns
+categorical_feature_columns=aliexpress_NL_config.categorical_feature_columns
+numerical_feature_columns=aliexpress_NL_config.numerical_feature_columns
+
+train_batch_size=10000
+validation_batch_size=100000
 device='cpu'
-epoch_number = 100
+epoch_number = 3
 use_warm_up = True
 warm_up_steps = 10
-validation_steps = 20
+log_steps=20
+validation_steps = 2000
 use_early_stop = True
 #define model
-model_name = "two_tower"
-num_items = amazon_beauty_config.n_items
-num_classes=num_items+1
-seq_len = amazon_beauty_config.generative_seq_len
-model = TwoTower(
-    num_items=num_items,
-    embed_dim=32)
+model_name = "mtl_shared_bottom"
+
+model = SharedBottom(
+             categorical_feature_columns=categorical_feature_columns,
+             numerical_feature_columns=numerical_feature_columns,
+             embed_dim=32)
 
 def main(model:nn.Module):
-    train_dataset = TorchStreamingRetrievalDataset(
-        data_path=generative_train_data_path,
-        feature_columns=generative_feature_columns,
-        sequence_columns=generative_sequence_columns,
-        label_column=generative_label_column,
-        batch_size=train_batch_size
-    )
+    train_dataset = TorchStreamingMTLDataset(
+        data_path=train_data_path,
+        categorical_feature_columns=categorical_feature_columns,
+        numerical_feature_columns=numerical_feature_columns,
+        label_columns=label_columns,
+        batch_size=train_batch_size)
     train_dataloader = DataLoader(train_dataset, batch_size=None)
-    validation_dataset = TorchStreamingRetrievalDataset(
-        data_path=generative_validation_data_path,
-        feature_columns=generative_feature_columns,
-        sequence_columns=generative_sequence_columns,
-        label_column=generative_label_column,
-        batch_size=validation_batch_size
-    )
+
+    validation_dataset =TorchStreamingMTLDataset(
+        data_path=validation_data_path,
+        categorical_feature_columns=categorical_feature_columns,
+        numerical_feature_columns=numerical_feature_columns,
+        label_columns=label_columns,
+        batch_size=validation_batch_size)
     validation_dataloader = DataLoader(validation_dataset, batch_size=None)
-    trainer = RetrivealTrainer(
+    trainer = MultiTaskTrainer(
         loss_fn=nn.CrossEntropyLoss(),
         model_name=model_name,
         model=model,
@@ -69,8 +70,8 @@ def main(model:nn.Module):
         use_warm_up=use_warm_up,
         warm_up_steps=warm_up_steps,
         validation_steps=validation_steps,
-        use_early_stop=use_early_stop,
-        num_classes=num_classes
+        log_steps=log_steps,
+        use_early_stop=use_early_stop
     )
     trainer.train()
 

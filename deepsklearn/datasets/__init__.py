@@ -2,5 +2,11 @@ from deepsklearn.datasets.streaming_dataset import TorchStreamingDataset
 from deepsklearn.datasets.seq_dataset import TorchStreamingSeqDataset
 from deepsklearn.datasets.generative_dataset import TorchStreamingGenerativeDataset
 from deepsklearn.datasets.bert_dataset import TorchStreamingBertDataset
+from deepsklearn.datasets.item2vec_dataset import TorchStreamingItem2vecDataset
+from deepsklearn.datasets.retrieval_dataset import TorchStreamingRetrievalDataset
+from deepsklearn.datasets.mtl_dataset import TorchStreamingMTLDataset
+
+
+
 
 

@@ -1,2 +1,4 @@
 from deepsklearn.trainer.discriminative_trainer import DiscriminativeTrainer
 from deepsklearn.trainer.generative_trainer import GenerativeTrainer
+from deepsklearn.trainer.retriveval_trainer import RetrivealTrainer
+from deepsklearn.trainer.multitask_trainer import MultiTaskTrainer

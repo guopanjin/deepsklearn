@@ -6,6 +6,10 @@ from deepsklearn.trainer import GenerativeTrainer
 from deepsklearn.utils import Logger,set_seed,prevent_sleep
 import torch.nn as nn
 '''
+2026-07-12 11:40:28 | INFO | generative_trainer.py:171 | {'stage': 'validation', 'model_name': 'bert4rec', 'epoch': 40, 'validation_number': 22363, 'validation_loss': 8.4567, 'normal_loss': 0.8995, 'validation_ppl': 4706.5009, 'num_classes': 12103}
+2026-07-12 11:40:51 | INFO | generative_trainer.py:171 | {'stage': 'validation', 'model_name': 'bert4rec', 'epoch': 40, 'validation_number': 22363, 'validation_loss': 8.4634, 'normal_loss': 0.9002, 'validation_ppl': 4738.1403, 'num_classes': 12103}
+2026-07-12 11:40:51 | INFO | generative_trainer.py:203 | early stop,stop training,best_loss:8.431, bad_round:5, min_delta:0.0005
+2026-07-12 11:40:51 | INFO | generative_trainer.py:141 | restore the best model weight to the current model
 
 
 '''

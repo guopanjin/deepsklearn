@@ -5,6 +5,12 @@ from torch.utils.data import DataLoader
 from deepsklearn.trainer import GenerativeTrainer
 from deepsklearn.utils import Logger,set_seed,prevent_sleep
 import torch.nn as nn
+'''
+2026-07-12 12:14:29 | INFO | generative_trainer.py:171 | {'stage': 'validation', 'model_name': 'hstu', 'epoch': 75, 'validation_number': 22363, 'validation_loss': 7.1439, 'normal_loss': 0.7599, 'validation_ppl': 1266.3576, 'num_classes': 12102}
+2026-07-12 12:14:29 | INFO | generative_trainer.py:203 | early stop,stop training,best_loss:7.1044, bad_round:5, min_delta:0.0005
+2026-07-12 12:14:29 | INFO | generative_trainer.py:141 | restore the best model weight to the current model
+'''
+
 logger=Logger.get_logger()
 set_seed(42)
 prevent_sleep() #prevent_sleep

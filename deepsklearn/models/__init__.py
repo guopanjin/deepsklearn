@@ -23,6 +23,18 @@ from deepsklearn.models.generative.sasrec import  SASRec
 from deepsklearn.models.generative.gru4rec import  GRU4Rec
 from deepsklearn.models.generative.bert4rec import  Bert4Rec
 
+# recall
+from deepsklearn.models.recall.item2vec import  Item2vec
+from deepsklearn.models.recall.two_tower import  TwoTower
+from deepsklearn.models.recall.youtubednn import  YoutubeDNN
+
+# multi-task learning
+from deepsklearn.models.multi_task_learning.shared_bottom import SharedBottom
+from deepsklearn.models.multi_task_learning.mmoe import MMOE
+from deepsklearn.models.multi_task_learning.esmm import ESMM
+from deepsklearn.models.multi_task_learning.ple import PLE
+
+
 
 
 

@@ -59,9 +59,8 @@ class ESMM(nn.Module):
         cvr_logits = self.cvr_out_linear(cvr_out)
         cvr_logits=torch.squeeze(cvr_logits,dim=-1)
 
-
-        ctr_label=label_dict["ctr_label"].to(torch.float)
-        ctcvr_label = label_dict["ctcvr_label"].to(torch.float)
+        ctr_label = label_dict["click"].to(torch.float)
+        ctcvr_label = label_dict["conversion"].to(torch.float)
 
         ctr_loss=F.binary_cross_entropy_with_logits(ctr_logits,ctr_label)
 
@@ -74,10 +73,15 @@ class ESMM(nn.Module):
         loss=ctr_loss+ctcvr_loss
 
         return {
-             "loss":loss,
-             "pctr":pctr,
-             "pcvr":pcvr,
-             "pctcvr":pctcvr}
+            "loss": loss,
+            "ctr_loss": ctr_loss,
+            "ctr_label": ctr_label,
+            "ctcvr_loss": ctcvr_loss,
+            "ctcvr_label": ctcvr_label,
+            "pctr": pctr,
+            "pctcvr": pctcvr}
+
+
 
 
 

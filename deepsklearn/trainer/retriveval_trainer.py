@@ -22,7 +22,7 @@ train_dataloader:
                          }
    yield feature_dict
 '''
-class Item2vecTrainer:
+class RetrivealTrainer:
     def __init__(self,
                  *,
                  model_name:str,
@@ -81,10 +81,6 @@ class Item2vecTrainer:
         ema_loss=None
         start_time=time.time()
         for epoch in range(self.epoch_number):
-            if self.use_early_stop:
-                if early_stop.stopped():
-                    logger.info(f"early stop trigged,epoch {epoch}")
-                    break;
             for feature_dict in self.train_dataloader:
                 feature_dict={k:v.to(self.device) for k,v in feature_dict.items()}
                 step_size = len(next(iter(feature_dict.values())))
@@ -124,15 +120,18 @@ class Item2vecTrainer:
                     })
                 if global_step % self.validation_steps ==0:
                     validation_loss=self._evaluation(epoch=epoch,model_name=self.model_name)
-                    if self.use_early_stop and self.step_early_stop:
+                    if self.use_early_stop:
                         if early_stop.step(validation_loss=validation_loss,
                                          model=self.model
                                         ):
                             break;
                 if scheduler:
                     scheduler.step()
+            if self.use_early_stop and early_stop.stopped():
+                logger.info(f"early stop trigged,epoch {epoch}")
+                break;
             validation_loss=self._evaluation(epoch=epoch,model_name=self.model_name)
-            if self.use_early_stop and not self.step_early_stop:
+            if self.use_early_stop:
                 if early_stop.step(validation_loss=validation_loss,
                                 model=self.model
                                 ):
