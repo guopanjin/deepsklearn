@@ -1,15 +1,58 @@
 [project]
 name = "deepsklearn"
-version = "1.0.0"
-description = "A sklearn-style deep learning framework with unified API"
+version = "1.0.1"
+description = "Sklearn-style deep learning model framework"
+
+readme = "README.md"
+
+requires-python = ">=3.9"
+
 authors = [
-    {name = "guopan.jin",email='guopan.jin@outlook.com'}
+    { name = "Guopan Jin", email = "guopan.jin@outlook.com" }
 ]
 
+license = { text = "MIT" }
+
+
 dependencies = [
-    "torch",
-    "numpy"
+    "torch>=2.0,<3.0",
+    "numpy>=1.22",
 ]
+
+
+[project.optional-dependencies]
+data = [
+    "pandas>=1.5",
+]
+
+ml = [
+    "scikit-learn>=1.2",
+]
+
+config = [
+    "toml>=0.10.2",
+]
+
+dev = [
+    "pytest>=7.0",
+    "build>=1.0",
+    "twine>=4.0",
+    "ruff>=0.5",
+    "black>=24.0",
+]
+
+all = [
+    "pandas>=1.5",
+    "scikit-learn>=1.2",
+    "toml>=0.10.2",
+    "pytest>=7.0",
+    "build>=1.0",
+    "twine>=4.0",
+    "ruff>=0.5",
+    "black>=24.0",
+]
+
+
 [build-system]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"

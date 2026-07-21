@@ -46,12 +46,13 @@ class MultiHeadAttention(nn.Module):
             mask=torch.unsqueeze(key_padding_mask,dim=-2).expand((batch_size,feature_size,feature_size))
             mask=torch.unsqueeze(mask,dim=1).expand((batch_size,self.num_heads,feature_size,feature_size))
             #For nan,one number is nan,all number is nan,so need to change float('-inf') to 1e-9,in case,some row is all padding.
-            attention_score=torch.masked_fill(attention_score,mask,1e-9)
+            #using torch.finfo(attention_score.dtype).min to replace 1e-9 is better
+            attention_score=torch.masked_fill(attention_score,mask,torch.finfo(attention_score.dtype).min)
         if self.use_causal_mask:
             #diagonal=1  token can attention to itself
             causal_mask=torch.triu(torch.ones(feature_size,feature_size),diagonal=1).to(torch.bool)#(feature_size,feature_size)
             causal_mask=causal_mask.to(q.device)
-            attention_score=torch.masked_fill(attention_score,causal_mask,1e-9)
+            attention_score=torch.masked_fill(attention_score,causal_mask,torch.finfo(attention_score.dtype).min)
 
         attention_weight=F.softmax(attention_score,dim=-1) #(batch_size,num_heads,feature_size,feature_size)
 
